@@ -6,13 +6,15 @@
 
 ## 安装
 
-在 DeepSeek Harness 里打开 **插件 → 添加插件**，粘贴下面的仓库地址，点 **安装**，装好后点 **立即启用**：
+在 DeepSeek Harness 里打开 **插件 → 添加插件**，在输入框里填包名，点 **安装**，装好后点 **立即启用**：
 
 ```
-https://github.com/FelixJiashengFu/dsh-force-collab
+dsh-force-collab
 ```
 
-输入框左侧随即出现「协作」。升级：在插件页卸载后，用同一个地址重新安装。
+也可以填 GitHub 仓库地址 `https://github.com/FelixJiashengFu/dsh-force-collab`。连不上 npm 官方源时，在 **安装源** 里选中国大陆镜像源再填包名。
+
+输入框左侧随即出现「协作」。升级：在插件页卸载后，用同样的方式重新安装。
 
 ## 它由哪几块组成
 
