@@ -1,7 +1,6 @@
 {
   "name": "dsh-force-collab",
   "version": "0.1.0",
-  "private": true,
   "description": "Forced collaboration for DeepSeek Harness: pick 1-6 sub-agents in the composer and every hands-on task is split across exactly that many child agents.",
   "type": "module",
   "main": "lib/index.js",
@@ -27,6 +26,15 @@
     "fanout"
   ],
   "license": "MIT",
+  "author": "Jiasheng Fu",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/FelixJiashengFu/dsh-force-collab.git"
+  },
+  "homepage": "https://github.com/FelixJiashengFu/dsh-force-collab#readme",
+  "bugs": {
+    "url": "https://github.com/FelixJiashengFu/dsh-force-collab/issues"
+  },
   "dsh": {
     "bundle": {
       "patch": "./cordis.patch.yml"

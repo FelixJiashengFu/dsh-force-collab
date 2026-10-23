@@ -4,6 +4,16 @@
 
 和自带的 `subagent` 工具的区别只有一个，但很关键：**数量由用户决定，模型改不了。**
 
+## 安装
+
+在 DeepSeek Harness 里打开 **插件 → 添加插件**，粘贴下面的仓库地址，点 **安装**，装好后点 **立即启用**：
+
+```
+https://github.com/FelixJiashengFu/dsh-force-collab
+```
+
+输入框左侧随即出现「协作」。升级：在插件页卸载后，用同一个地址重新安装。
+
 ## 它由哪几块组成
 
 | 部分 | 文件 | 作用 |
@@ -32,29 +42,16 @@
 
 寒暄、单步确认这类一句话任务允许不派工 —— 这条写在提示词里，避免用户说「你好」也被拆成六份。
 
-## 安装
+## 本地开发
 
-作为本地 link 包装进 profile：
-
-```powershell
-# 1. 依赖 + bundle 列表
-#    在 C:\Users\fujia\.dsh\profiles\desktop\package.json 里加入：
-#      "dependencies": { "dsh-force-collab": "link:K:/Redshift/plugins/dsh-force-collab" }
-#      "dsh.profile.bundles": [ ... , "dsh-force-collab" ]
-# 2. 让 Node 能解析到它
-New-Item -ItemType Junction `
-  -Path "C:\Users\fujia\.dsh\profiles\desktop\node_modules\dsh-force-collab" `
-  -Target "K:\Redshift\plugins\dsh-force-collab"
-# 3. 重启 DSH（或通过插件面板启用）后，输入框左侧出现「协作」
-```
+克隆本仓库后，在 **添加插件** 里填本地目录的绝对路径即可，DSH 会以 `link:` 方式安装，改代码后重载插件（或重启 DSH）生效。
 
 ## 自检
 
 ```powershell
-# 用 Harness 自带的 Node 运行，仓库里没有独立 node 也能跑
+# 在仓库根目录运行；用 Harness 自带的 Node，本机没有独立 node 也能跑
 $env:ELECTRON_RUN_AS_NODE="1"
-& "C:\Users\fujia\AppData\Local\Programs\DeepSeek Harness\DeepSeek Harness.exe" `
-  "K:\Redshift\plugins\dsh-force-collab\test\smoke.mjs"
+& "$env:LOCALAPPDATA\Programs\DeepSeek Harness\DeepSeek Harness.exe" test\smoke.mjs
 ```
 
 覆盖：挂载数量、提示词随宽度变化、child session 不被注入、精确派工数量、聚合内容、关闭/嵌套/无 provider 三种拒绝路径、路由读写与越界校验、浏览器半边的加载与占位注册。
