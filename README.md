@@ -1,0 +1,67 @@
+# dsh-force-collab · 强制协作
+
+在输入框左侧直接选 **1 / 2 / 3 / 4 / 5 / 6**，这一轮任务就被强行拆给这么多个子 Agent 并行做，再由主 Agent 汇总成一份答案。
+
+和自带的 `subagent` 工具的区别只有一个，但很关键：**数量由用户决定，模型改不了。**
+
+## 它由哪几块组成
+
+| 部分 | 文件 | 作用 |
+| --- | --- | --- |
+| 宽度选择器（浏览器） | `lib/client.js` | 输入框左侧的「协作」按钮 + 0-6 弹层，读写 profile 级宽度 |
+| 状态路由（Host） | `lib/index.js` | `GET/POST /plugins/dsh-force-collab/state`，仅本机回环可访问 |
+| 宽度持久化 | `lib/state.js` | `~/.dsh/force-collab.json`，原子写入，profile 级生效 |
+| 强制派工工具 | `lib/tools.js` | 唯一的模型工具 `collab_fanout`，**没有数量参数** |
+| 强制指令 | `lib/prompt.js` | 动态系统提示词段落，宽度 ≥1 时要求先派工 |
+
+## 为什么这算「强行」
+
+1. **模型拿不到数量参数** —— `collab_fanout` 的 schema 里只有 `brief` / `angles` / `model`。宽度从用户设置里读，模型既看不到可改的入参，也没有别的入口。
+2. **系统提示词每轮动态生效** —— `text` 是回调，改宽度后下一次请求立即反映，不需要重载插件。
+3. **子 Agent 不会无限套娃** —— 本插件记录的 child session 再调用 `collab_fanout` 会被拒绝；提示词段落也不会出现在 child session 里。
+4. **失败有明确出口** —— 宽度为 0、没有可用 provider、超出单会话派工上限时，工具返回可读的错误，并明确要求主 Agent 自己完成，而不是改派自带工具。
+
+## 宽度语义
+
+| 值 | 行为 |
+| --- | --- |
+| `0`（关） | 不注入任何强制指令，工具调用会被拒绝 |
+| `1`-`6` | 注入强制指令；`collab_fanout` 一次派出正好该数量 |
+
+默认分工（`angles` 不填时）按宽度固定分配，例如 3 → 调研与现有实现 / 方案与实现改动 / 验证、风险与反例；模型可以通过 `angles` 覆盖文字，但**不能覆盖数量**。
+
+寒暄、单步确认这类一句话任务允许不派工 —— 这条写在提示词里，避免用户说「你好」也被拆成六份。
+
+## 安装
+
+作为本地 link 包装进 profile：
+
+```powershell
+# 1. 依赖 + bundle 列表
+#    在 C:\Users\fujia\.dsh\profiles\desktop\package.json 里加入：
+#      "dependencies": { "dsh-force-collab": "link:K:/Redshift/plugins/dsh-force-collab" }
+#      "dsh.profile.bundles": [ ... , "dsh-force-collab" ]
+# 2. 让 Node 能解析到它
+New-Item -ItemType Junction `
+  -Path "C:\Users\fujia\.dsh\profiles\desktop\node_modules\dsh-force-collab" `
+  -Target "K:\Redshift\plugins\dsh-force-collab"
+# 3. 重启 DSH（或通过插件面板启用）后，输入框左侧出现「协作」
+```
+
+## 自检
+
+```powershell
+# 用 Harness 自带的 Node 运行，仓库里没有独立 node 也能跑
+$env:ELECTRON_RUN_AS_NODE="1"
+& "C:\Users\fujia\AppData\Local\Programs\DeepSeek Harness\DeepSeek Harness.exe" `
+  "K:\Redshift\plugins\dsh-force-collab\test\smoke.mjs"
+```
+
+覆盖：挂载数量、提示词随宽度变化、child session 不被注入、精确派工数量、聚合内容、关闭/嵌套/无 provider 三种拒绝路径、路由读写与越界校验、浏览器半边的加载与占位注册。
+
+## 已知边界
+
+- 宽度是 **profile 级**的，和「电脑操作」开关同类：选定后一直生效，直到再改。
+- 子 Agent 的进度不会实时流进主对话；主 Agent 在全部返回后一次性拿到报告。长任务期间界面看起来是「在等」。
+- 单会话累计派工上限 36 个（防止模型在循环里无限派工）。
+- 不阻止自带 `subagent` 工具的注册，只在提示词里明确禁用；真正兜底的是数量参数缺失与本工具的子会话拒绝。

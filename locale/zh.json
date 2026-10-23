@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "强制协作",
+    "description": "在输入框左侧选择 1-6 个子 Agent，本轮任务会被强行拆给这么多个子 Agent 并行完成，再由主 Agent 汇总。"
+  }
+}

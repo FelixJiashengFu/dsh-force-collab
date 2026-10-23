@@ -1,0 +1,6 @@
+# The host half. Its `dsh.client` field in package.json tells the loader to ship
+# lib/client.js to the Web client, where it renders the width picker left of the
+# composer.
+- insert:
+    - id: force-collab
+      name: dsh-force-collab

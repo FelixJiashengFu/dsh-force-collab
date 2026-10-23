@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Force collaboration",
+    "description": "Pick 1-6 sub-agents left of the composer and the current task is split across exactly that many child agents, then merged by the parent agent."
+  }
+}

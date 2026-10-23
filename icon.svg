@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="Force collaboration">
+  <defs>
+    <linearGradient id="fc-branch" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0" stop-color="#3b82f6"/>
+      <stop offset="1" stop-color="#8b5cf6"/>
+    </linearGradient>
+  </defs>
+  <path d="M5 21v-6.5M5 14.5h7M12 14.5l6-6M12 14.5l6 6" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+  <circle cx="18.5" cy="6.5" r="2.7" fill="none" stroke="url(#fc-branch)" stroke-width="1.8"/>
+  <circle cx="18.5" cy="18.5" r="2.7" fill="none" stroke="url(#fc-branch)" stroke-width="1.8"/>
+  <circle cx="5" cy="21" r="1.9" fill="currentColor"/>
+</svg>
