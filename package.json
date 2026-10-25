@@ -1,6 +1,6 @@
 {
   "name": "dsh-force-collab",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Forced collaboration for DeepSeek Harness: pick 1-6 sub-agents in the composer and every hands-on task is split across exactly that many child agents.",
   "type": "module",
   "main": "lib/index.js",
@@ -16,7 +16,8 @@
     "locale/*.json",
     "icon.svg",
     "cordis.patch.yml",
-    "README.md"
+    "README.md",
+    "CHANGELOG.md"
   ],
   "keywords": [
     "dsh",
@@ -46,5 +47,9 @@
         "@deepseek-ai/dsh-client-ui-conversation"
       ]
     }
+  },
+  "scripts": {
+    "test": "node test/smoke.mjs",
+    "prepublishOnly": "npm test"
   }
 }

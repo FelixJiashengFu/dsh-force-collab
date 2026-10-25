@@ -347,6 +347,56 @@ test('client half loads through the module loader and seats itself', () => {
 	}
 })
 
+test('concurrent fan-outs reserve slots before starting any child', async () => {
+	const { service, started } = fakeSubagents()
+	const { registered, setWidth } = await boot(service)
+	await setWidth(6)
+	const tool = registered.tools[0]
+	const exec = { agent: { id: 'parent-concurrent' }, signal: idleSignal() }
+	// Five completed fan-outs use 30 slots. Only one of the next two may start.
+	for (let i = 0; i < 5; i++) await tool.execute({ brief: 'x' }, exec)
+	const results = await Promise.allSettled([
+		tool.execute({ brief: 'x' }, exec), tool.execute({ brief: 'x' }, exec)
+	])
+	assert.equal(results.filter((result) => result.status === 'fulfilled').length, 1)
+	assert.equal(results.filter((result) => result.status === 'rejected').length, 1)
+	assert.equal(started.length, 36)
+})
+
+test('concurrent fan-outs within the limit do not count reservations twice', async () => {
+	const { service, started } = fakeSubagents()
+	const { registered, setWidth } = await boot(service)
+	await setWidth(6)
+	const tool = registered.tools[0]
+	const exec = { agent: { id: 'parent-with-room' }, signal: idleSignal() }
+	await Promise.all(Array.from({ length: 6 }, () => tool.execute({ brief: 'x' }, exec)))
+	assert.equal(started.length, 36)
+	await assert.rejects(tool.execute({ brief: 'x' }, exec), /上限/)
+})
+
+test('a partially failed start releases unused slots but counts children already started', async () => {
+	const fake = fakeSubagents()
+	let failOnce = true
+	const original = fake.service.startActivation
+	fake.service.startActivation = async (spec) => {
+		if (failOnce && fake.started.length === 1) {
+			failOnce = false
+			throw new Error('simulated start failure')
+		}
+		return original(spec)
+	}
+	const { registered, setWidth } = await boot(fake.service)
+	const tool = registered.tools[0]
+	const exec = { agent: { id: 'parent-partial' }, signal: idleSignal() }
+	await setWidth(6)
+	await assert.rejects(tool.execute({ brief: 'x' }, exec), /simulated start failure/)
+	for (let i = 0; i < 5; i++) await tool.execute({ brief: 'x' }, exec)
+	await setWidth(5)
+	await tool.execute({ brief: 'x' }, exec)
+	assert.equal(fake.started.length, 36)
+	await assert.rejects(tool.execute({ brief: 'x' }, exec), /上限/)
+})
+
 let failed = 0
 for (const entry of cases) {
 	try {
